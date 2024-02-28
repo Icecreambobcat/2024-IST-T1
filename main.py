@@ -12,7 +12,8 @@ class player:
 
 
 class interactable:
-    def __init__(self, choice1, choice2, result1, result2) -> None:
+    def __init__(self,question, choice1, choice2, result1, result2) -> None:
+        self.question = question
         self.choice1 = choice1
         self.choice2 = choice2
         self.result1 = result1
