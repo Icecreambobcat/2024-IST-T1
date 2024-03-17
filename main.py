@@ -1,4 +1,6 @@
 import map
+import pickle
+import curses
 
 
 class player:
