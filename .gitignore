@@ -18,4 +18,5 @@ build/
 
 .env
 .venv/
-ENV/
+
+ENV/.DS_Store
