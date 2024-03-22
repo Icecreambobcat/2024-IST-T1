@@ -1,6 +1,7 @@
 import map
 import pickle
 import curses
+import random
 import csv
 from curses import wrapper
 
@@ -69,28 +70,46 @@ def init_story() -> dict:
     return out
 
 
-def save() -> None:
+def save(local_data: dict) -> None:
+    try:
+        with open('save.bin', 'wb') as save_file:
+            pickle.dump(local_data, save_file)
+    except Exception as e:
+        print(f"An error occurred while saving data: {e}")
 
-    local_data = NotImplemented
-    # note to implement dict for local data saves 
 
-    with open('save.bin', 'wb') as save:
-        save.write(pickle.dumps(local_data))
-
-
-def read() -> None:
-    with open('save.bin', 'rb') as save:
-        local_data = pickle.loads(save)
-
-    NotImplemented = local_data
+def read() -> dict:
+    try:
+        with open('save.bin', 'rb') as save_file:
+            local_data = pickle.load(save_file)
+        return local_data
+    except FileNotFoundError:
+        print("The file 'save.bin' does not exist.")
+        return {}
+    except pickle.UnpicklingError:
+        print("An error occurred while loading data.")
+        return {}
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return {}
 
 
 def roll_dice(d, count, type) -> int:
     # where d is sides, count is number of dice, and type is how to combine results
-    pass
+    if d and count is int and type is str:
+        if type == "sum":
+            return sum([random.randint(1, d) for i in range(count)])
+        if type == "max":
+            return max([random.randint(1, d) for i in range(count)])
+        if type == "min":
+            return min([random.randint(1, d) for i in range(count)])
+        else:
+            return 0
+    else: 
+        return 0
 
 
 def fight(scene) -> None:
     # implement a basic fight system where it's essentially a SPR reskin
     # considering what story node the player is at display different dialogue
-    pass
+        pass
