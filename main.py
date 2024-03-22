@@ -2,14 +2,19 @@ import map
 import pickle
 import curses
 import random
+import sys
 import csv
-from curses import wrapper
 
 
 class player:
-    def __init__(self) -> None:
+    def __init__(self, name) -> None:
         self.x = 0
         self.y = 0
+        self.items = []
+        self.story_stage = 0
+        self.lives = 3
+        self.name = name
+        self.first_play = True
         
     def move(self, move_x, move_y) -> None:
         if map.map1[move_x][move_y] != 5:
@@ -40,7 +45,7 @@ def init_questions() -> dict:
     out = {}
     with open('story.csv', newline='') as question_list:
         questioncsv= csv.reader(question_list, delimiter=':', quotechar='"')
-        questions =[interactable(line[0], line[1], line[3], line[4], line[5]) for line in questioncsv]
+        questions =[interactable(line[0], line[1], line[2], line[3], line[4]) for line in questioncsv]
         counter = 0
         for q in questions:
             out[counter] = q
@@ -111,5 +116,27 @@ def roll_dice(d, count, type) -> int:
 
 def fight(scene) -> None:
     # implement a basic fight system where it's essentially a SPR reskin
+    # maybe could also implement with battle class idk
     # considering what story node the player is at display different dialogue
         pass
+
+
+def main(stdscr) -> None:
+    stdscr.clear()
+    main_win = curses.newwin(24, 60, 20, 0)
+    text_win = curses.newwin(24, 20, 0, 0)
+
+    while True:
+        if text_win.getstr() == "quit":
+            # temp sol
+            local_data = {}
+            save(local_data)
+            break
+        pass
+
+
+curses.wrapper(main)
+
+
+if __name__ == "__main__":
+    main(stdscr=curses.initscr())
