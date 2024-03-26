@@ -20,3 +20,4 @@ build/
 .venv/
 
 ENV/.DS_Store
+.DS_Store
