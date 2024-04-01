@@ -1,20 +1,32 @@
 from __future__ import annotations
-import abc
 import typing
 import map
 import pickle
 import curses
 import random
 import csv
-import json
 
 
 class player:
     def __init__(self, name: str) -> None:
+        """
+
+        Player class to store local runtime data for the player
+
+        Properties:
+
+        x: int - x coordinate of the player
+        y: int - y coordinate of the player
+        items: list[str] - list of items the player has
+        story_index: int - index of the current story text
+        lives: int - number of lives the player has
+        name: str - name of the player
+
+        """
         self.x = 0
         self.y = 0
         self.items = []
-        self.story_stage = 0
+        self.story_index = 0
         self.lives = 3
         self.name = name
         
@@ -26,82 +38,164 @@ class player:
             move_x = 0
 
 
-class interactable:
-    def __init__(self,question: str, choice1: str, choice2: str, result1: str, result2: str) -> None:
-        # probably just change how the entire thing works and hardcode indexes for story events
+class question:
+    def __init__(self, question: list[str], choice1: str, choice2: str, result1: str, result2: str, pointer1: int, pointer2: int, index: int) -> None:
+        """
+        
+        Class to store questions, choices, and results for the game as well as point to the next event
+
+        Properties:
+
+        question: list[str] - the question to be asked
+        choice1: str - the first choice
+        choice2: str - the second choice
+        result1: str - the result of the first choice
+        result2: str - the result of the second choice
+        pointer1: int - the index of the next event if the first choice is chosen
+        pointer2: int - the index of the next event if the second choice is chosen
+        index: int - the index of the current event
+
+        """
         self.question = question
         self.choice1 = choice1
         self.choice2 = choice2
         self.result1 = result1
         self.result2 = result2
+        self.pointer1 = pointer1
+        self.pointer2 = pointer2
+        self.index = index
 
-    def check(self, choice: str) -> str:
+    def check(self, choice: str) -> list[str | int]:
         if choice == self.choice1:
-            return self.result1
+            return [self.result1, self.pointer1]
         if choice == self.choice2:
-            return self.result2
+            return [self.result2, self.pointer2]
         else:
-            return "Invalid choice"
+            return ["Invalid input", self.index]
 
 
 class story:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, text: list[str], index: int, pointer: int) -> None:
+        """
+        
+        Class to contain text screen events
+
+        Properties:
+
+        text: list[str] - the text to be displayed
+        index: int - the index of the current event
+        pointer: int - the index of the next event
+
+        """
+        self.text = text
+        self.index = index
+        self.pointer = pointer
 
 class fight:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, text_list: list[str], outcome1: list[str], outcome2: list[str], outcome3: list[str], index: int, pointer1: int, pointer2: int, pointer3: int) -> None:
+        """
+
+        Class to contain fight events
+        
+        Properties:
+
+        text_list: list[str] - the text to be displayed
+        outcome1: list[str] - the outcome of the first choice
+        outcome2: list[str] - the outcome of the second choice
+        outcome3: list[str] - the outcome of the third choice
+        index: int - the index of the current event
+        pointer1: int - the index of the next event if the first choice is chosen
+        pointer2: int - the index of the next event if the second choice is chosen
+        pointer3: int - the index of the next event if the third choice is chosen
+        
+        """
+        self.text = text_list
+        self.outcome1 = outcome1
+        self.outcome2 = outcome2
+        self.outcome3 = outcome3
+        self.index = index
+        self.pointer1 = pointer1
+        self.pointer2 = pointer2
+        self.pointer3 = pointer3
         
 
-def init_questions() -> dict:
+class intro:
+    def __init__(self, text: list[str], index: int, pointer: int) -> None:
+        """
+        
+        Class to contain intro events
+
+        Properties:
+
+        text: list[str] - the text to be displayed
+        index: int - the index of the current event
+        pointer: int - the index of the next event
+
+        """
+        self.text = text
+        self.index = index
+        self.pointer = pointer
+
+
+def init_all() -> dict[int, dict[str, object]]:
     out = {}
-    with open('story.csv', newline='') as question_list:
-        questioncsv = csv.reader(question_list, delimiter=':', quotechar='"')
-        next(questioncsv)
-        questions =[interactable(line[0], line[1], line[2], line[3], line[4]) for line in questioncsv]
-        counter = 0
-        for q in questions:
-            out[counter] = q
-            counter += 1
 
-    return out
+    """
+    
+    Function to initialize all data from csv files
+
+    This function takes the outputs of the other functions and combines them into one dictionary
+    
+    """
+
+    def init_questions() -> dict:
+        out = {}
+        with open('questions.csv', 'r') as file:
+            questions_csv = csv.reader(file)
+            next(questions_csv)   
+            for line in questions_csv:
+                obj = question(line[0].split('#'), line[1], line[2], line[3], line[4], int(line[5]), int(line[6]), int(line[7]))
+                out [obj.index] = obj
+
+        return out
+
+    def init_intro() -> dict:
+        out = {}
+        with open('intro.csv', 'r') as file:
+            intro_csv = csv.reader(file)
+            next(intro_csv)
+            for line in intro_csv:
+                obj = intro(line[0].split('#'), int(line[1]), int(line[2]))
+                out[obj.index] = obj
+
+        return out
+
+    def init_story() -> dict:
+        out = {}
+        with open('story.csv', 'r') as file:
+            story_csv = csv.reader(file)
+            next(story_csv)
+            for line in story_csv:
+                obj = story(line[0].split('#'), int(line[1]), int(line[2]))
+                out[obj.index] = obj
+
+        return out
+
+    def init_fights() -> dict:
+        out = {}
+        with open('fights.csv', 'r') as file:
+            fights_csv = csv.reader(file)
+            next(fights_csv)
+            for line in fights_csv:
+                obj = fight(line[0].split('#'), line[1].split('#'), line[2].split('#'), line[3].split('#'), int(line[4]), int(line[5]), int(line[6]), int(line[7]))
+                out[obj.index] = obj
+
+        return out
 
 
-def init_intro() -> dict:
-    out = {}
-    with open('intro.csv', newline='') as intro:
-        introcsv = csv.reader(intro, delimiter=':', quotechar='"')
-        next(introcsv)
-        counter = 0
-        for line in introcsv:
-            out[counter] = line
-            counter += 1
-
-    return out
-
-
-def init_story() -> dict:
-    out = {}
-    with open('story.csv', newline='') as story:
-        storycsv = csv.reader(story, delimiter=':', quotechar='"')
-        next(storycsv)
-        counter = 0
-        for line in storycsv:
-            out[counter] = line
-            counter += 1
-
-    return out
-
-
-def init_fights() -> dict:
-    out = {}
-    with open('fights.csv', newline='') as fights:
-        fightcsv = csv.reader(fights, delimiter=':', quotechar='"')
-        next(fightcsv)
-        counter = 0
-        for line in fightcsv:
-            out[counter] = line
-            counter += 1
+    for directory in [init_questions(), init_intro(), init_story(), init_fights()]:
+        for key in directory.keys():
+            out[key] = directory[key]
 
     return out
 
