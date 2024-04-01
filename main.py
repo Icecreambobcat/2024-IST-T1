@@ -37,6 +37,16 @@ class player:
             move_y = 0
             move_x = 0
 
+    def packege_data(self) -> dict[str, typing.Any]:
+        return {
+            'x': self.x,
+            'y': self.y,
+            'items': self.items,
+            'story_index': self.story_index,
+            'lives': self.lives,
+            'name': self.name
+        }
+
 
 class question:
     def __init__(self, question: list[str], choice1: str, choice2: str, result1: str, result2: str, pointer1: int, pointer2: int, index: int) -> None:
@@ -137,7 +147,7 @@ class intro:
         self.pointer = pointer
 
 
-def init_all() -> dict[int, dict[str, object]]:
+def init_all() -> dict[int, dict[int, object]]:
     out = {}
 
     """
@@ -256,28 +266,35 @@ def move_player(player: player, mvmt: str) -> None:
         move_y = 0
     player.move(player.x + move_x, player.y +  move_y)
 
-def display_story(player: player, story: dict, index: int) -> None:
-    story_text = story[index]
-    for line in story_text:
-        pass # do something about this later, rest of the display functions are honestly the same
-    pass
+
+def recreate_player(data: dict[str, typing.Any]) -> player:
+    p = player(data['name'])
+    p.x = data['x']
+    p.y = data['y']
+    p.items = data['items']
+    p.story_index = data['story_index']
+    p.lives = data['lives']
+    return p
 
 
-def display_intro(player: player, intro: dict, index: int) -> None:
-    pass
-
-
-def display_fight(player: player, fight: dict, index: int) -> None:
-    pass
-
-
-def interact(player: player, question: str, choice1: str, choice2: str, result1: str, result2: str) -> str:
-    pass
-    # display question and choices
-    # get user input
-    # return result
-    # also handle invalid input and other cases where the the type of interaction is not a question
-    return ''
+def display(index: int, window: curses.window) -> None:
+    if text_store[index].__class__.__name__ == "story":
+        out = []
+        for w in text_store[index].text:
+            out.append(w)
+        for lines in out:
+            window.addstr(lines) # figure how to make it look good
+        pass
+    elif text_store[index].__class__.__name__ == "question":
+        for w in text_store[index].question:
+            pass
+        pass
+    elif text_store[index].__class__.__name__ == "fight":
+        pass
+    elif text_store[index].__class__.__name__ == "intro":
+        pass
+    else:
+        pass
 
 
 def main(stdscr) -> None:
@@ -285,7 +302,28 @@ def main(stdscr) -> None:
     main_win = curses.newwin(24, 60, 20, 0)
     text_win = curses.newwin(24, 20, 0, 0)
 
+    save_data = read()
+
+    if save_data and save_data != {}:
+        local_data = save_data 
+    elif save_data['first_run'] == True:
+        local_data = {
+            'first_run' : False
+        }
+    elif save_data == {}: # if error
+        # prompt user to repair files or build new save
+        # should prompt user to rm -rf the directory and reinstall
+        # automate through zsh script
+        return None
+
+
+    global text_store
+    text_store = init_all()
+
     while True: # game loop: build the rest in here
+
+        # when am i gonna write the game lmao
+
         if text_win.getstr() == "quit": # save and exit
             # temp sol: change local_data to global save
             local_data = {}
