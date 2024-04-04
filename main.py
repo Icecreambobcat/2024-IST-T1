@@ -1,10 +1,12 @@
 from __future__ import annotations
 import typing
-import map
 import pickle
 import curses
 import random
 import csv
+import time
+import os
+from curses import wrapper, textpad
 
 
 class player:
@@ -15,32 +17,19 @@ class player:
 
         Properties:
 
-        x: int - x coordinate of the player
-        y: int - y coordinate of the player
         items: list[str] - list of items the player has
         story_index: int - index of the current story text
         lives: int - number of lives the player has
         name: str - name of the player
 
         """
-        self.x = 0
-        self.y = 0
         self.items = []
         self.story_index = 0
         self.lives = 3
         self.name = name
         
-    def move(self, move_x: int, move_y: int) -> None:
-        if map.map1[move_x][move_y] != 5:
-            self.x += move_x
-            self.y += move_y
-            move_y = 0
-            move_x = 0
-
     def packege_data(self) -> dict[str, typing.Any]:
         return {
-            'x': self.x,
-            'y': self.y,
             'items': self.items,
             'story_index': self.story_index,
             'lives': self.lives,
@@ -147,7 +136,7 @@ class intro:
         self.pointer = pointer
 
 
-def init_all() -> dict[int, dict[int, object]]:
+def init_all() -> dict[int, typing.Any]:
     out = {}
 
     """
@@ -158,7 +147,7 @@ def init_all() -> dict[int, dict[int, object]]:
     
     """
 
-    def init_questions() -> dict:
+    def init_questions() -> dict[int, question]:
         out = {}
         with open('questions.csv', 'r') as file:
             questions_csv = csv.reader(file)
@@ -169,10 +158,10 @@ def init_all() -> dict[int, dict[int, object]]:
 
         return out
 
-    def init_intro() -> dict:
+    def init_intro() -> dict[int, intro]:
         out = {}
-        with open('intro.csv', 'r') as file:
-            intro_csv = csv.reader(file)
+        with open('intro.csv', 'r', newline= '') as file:
+            intro_csv = csv.reader(file, delimiter= ':')
             next(intro_csv)
             for line in intro_csv:
                 obj = intro(line[0].split('#'), int(line[1]), int(line[2]))
@@ -180,7 +169,7 @@ def init_all() -> dict[int, dict[int, object]]:
 
         return out
 
-    def init_story() -> dict:
+    def init_story() -> dict[int, story]:
         out = {}
         with open('story.csv', 'r') as file:
             story_csv = csv.reader(file)
@@ -191,7 +180,7 @@ def init_all() -> dict[int, dict[int, object]]:
 
         return out
 
-    def init_fights() -> dict:
+    def init_fights() -> dict[int, fight]:
         out = {}
         with open('fights.csv', 'r') as file:
             fights_csv = csv.reader(file)
@@ -210,30 +199,23 @@ def init_all() -> dict[int, dict[int, object]]:
     return out
 
 
-def save(local_data: dict[str, typing.Any]) -> None:
+def save(local_data: dict[str, typing.Any]) -> None | int:
     try:
-        with open('save.bin', 'wb') as save_file:
+        with open('save.txt', 'wb') as save_file:
             pickle.dump(local_data, save_file)
-    except Exception as e:
-        print(f"An error occurred while saving data: {e}")
+    except Exception:
+        return 0
 
 
-def read() -> dict[str, typing.Any]:
+def read() -> dict[str, typing.Any] | None:
     try:
-        with open('save.bin', 'rb') as save_file:
+        with open('save.txt', 'rb') as save_file:
             local_data = pickle.load(save_file)
-            if local_data is None:
-                return {'key': None}
+            if local_data is None or not dict:
+                return None
             else: return local_data
-    except FileNotFoundError:
-        print("The file 'save.bin' does not exist.")
-        return {}
-    except pickle.UnpicklingError:
-        print("An error occurred while loading data.")
-        return {}
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return {}
+    except Exception:
+        return None
 
 
 def roll_dice(d: int, count: int, type: str) -> int:
@@ -251,26 +233,8 @@ def roll_dice(d: int, count: int, type: str) -> int:
         return 0
 
 
-def move_player(player: player, mvmt: str) -> None:
-    if mvmt == "up":
-        move_x = 0
-        move_y = -1
-    elif mvmt == "down":
-        move_x = 0
-        move_y = 1
-    elif mvmt == "left":
-        move_x = -1
-        move_y = 0
-    elif mvmt == "right":
-        move_x = 1
-        move_y = 0
-    player.move(player.x + move_x, player.y +  move_y)
-
-
 def recreate_player(data: dict[str, typing.Any]) -> player:
     p = player(data['name'])
-    p.x = data['x']
-    p.y = data['y']
     p.items = data['items']
     p.story_index = data['story_index']
     p.lives = data['lives']
@@ -278,62 +242,162 @@ def recreate_player(data: dict[str, typing.Any]) -> player:
 
 
 def display(index: int, window: curses.window) -> None:
-    if text_store[index].__class__.__name__ == "story":
-        out = []
-        for w in text_store[index].text:
+
+    obj = text_store[index]
+    out = []
+
+   # if obj.__class__.__name__ == "story":
+   #     for w in obj.text:
+   #         out.append(w)
+   #     for lines in out:
+   #         window.addstr(lines) # figure how to make it look good
+   # elif text_store[index].__class__.__name__ == "question":
+   #     for w in obj.question:
+   #         out.append(w)
+   #     for lines in out:
+   #         window.addstr(lines) # figure how to make it look good
+   # elif text_store[index].__class__.__name__ == "fight":
+   #     for w in obj.text:
+   #         out.append(w)
+   #     for lines in out:
+   #         window.addstr(lines)
+    if text_store[index].__class__.__name__ == "intro":
+        counter = 0
+        for w in obj.text:
             out.append(w)
         for lines in out:
-            window.addstr(lines) # figure how to make it look good
-        pass
-    elif text_store[index].__class__.__name__ == "question":
-        for w in text_store[index].question:
-            pass
-        pass
-    elif text_store[index].__class__.__name__ == "fight":
-        pass
-    elif text_store[index].__class__.__name__ == "intro":
-        pass
-    else:
-        pass
+            counter += 1
+            window.addstr(counter - 1, 0, lines)
+            window.refresh()
+   # else:
+   #     raise Exception("Invalid object type")
+   #     # what else though
 
 
 def main(stdscr) -> None:
-    stdscr.clear()
-    main_win = curses.newwin(24, 60, 20, 0)
-    text_win = curses.newwin(24, 20, 0, 0)
 
-    save_data = read()
+    def set_terminal_size():
+        # For macOS
+        os.system('osascript -e \'tell application "Terminal" to tell front window to set {rows, columns} to {26, 104}\'')
 
-    if save_data and save_data != {}:
-        local_data = save_data 
-    elif save_data['first_run'] == True:
-        local_data = {
-            'first_run' : False
-        }
-    elif save_data == {}: # if error
-        # prompt user to repair files or build new save
-        # should prompt user to rm -rf the directory and reinstall
-        # automate through zsh script
-        return None
+        # For some Windows systems
+        # os.system('mode con: cols=104 lines=26')
 
+        # For some Unix-based systems
+        # os.system('resize -s 26 104')
+
+    set_terminal_size()
+
+    global main_win, text_win, main_border, text_border, input_win, text_store
 
     global text_store
     text_store = init_all()
 
+    local_data = {}
+
+    save_data = read()
+
+    if save_data != None:
+        local_data: dict[str, typing.Any] = save_data
+    else:
+        local_data['first_play'] = True
+        local_data['name'] = ""
+        local_data['items'] = []
+        local_data['story_index'] = 0
+        local_data['lives'] = 3
+
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    red_black = curses.color_pair(1)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    green_black = curses.color_pair(2)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    invert = curses.color_pair(3)
+    curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    cyan_black = curses.color_pair(4)
+
+    stdscr.clear()
+    curses.cbreak()
+    
+    main_win = curses.newwin(24, 60, 1, 43)
+    text_win = curses.newwin(24, 40, 1, 1)
+    input_win = curses.newwin(10, 40, 15, 1)
+    main_border = curses.newwin(26, 62, 0, 42)
+    text_border = curses.newwin(26, 42, 0, 0)
+
+    input_box = textpad.Textbox(input_win, insert_mode=True)
+
+
+    main_win.attron(cyan_black)
+    text_win.attron(green_black)
+    text_border.attron(green_black)
+    input_win.attron(red_black)
+
+
+    main_border.border()
+    text_border.border()
+
+    main_border.refresh()
+    text_border.refresh()
+
+    main_win.addstr(0, 0, "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.")
+    text_win.addstr(0, 0, "You'll type your input here.\nPress Ctrl+G to confirm inputs.")
+
+    main_win.refresh()
+    text_win.refresh()
+
+
+    input_win.move(0, 0)
+    text_win.getch()
+    
+
+    if local_data['first_play'] == True:
+        text_win.addstr(3, 0, "Please enter your name:", red_black)
+        text_win.refresh()
+        while True: 
+            input_box.edit()
+            name = input_box.gather().strip()
+            input_win.clear()
+
+            if name.lower() == "quit":
+                curses.nocbreak()
+                stdscr.keypad(False)
+                save(local_data)
+                quit()
+
+            elif name != "":
+                local_data['first_play'] = False
+                local_data['name'] = name
+                input_win.clear()
+                break
+
+            elif name == "":
+                text_win.addstr(4, 0, "Please enter a valid name.\nNo blank names, nameless wanderer.", red_black)
+                text_win.refresh()
+                continue
+
+
+
     while True: # game loop: build the rest in here
+        text_win.clear()
+        main_win.clear()
+        main_win.refresh()
+        text_win.refresh()
 
-        # when am i gonna write the game lmao
+        # incorporate display function right here
+        display(local_data['story_index'], main_win)
 
-        if text_win.getstr() == "quit": # save and exit
-            # temp sol: change local_data to global save
-            local_data = {}
+        input_box.edit()
+        key = input_box.gather().strip().lower()
+        input_win.clear()
+        if key.lower().strip() == "quit": # save and exit
+            curses.nocbreak()
             save(local_data)
-            break
-        pass
+            quit()
+        elif key.lower().strip() == "save":
+            save(local_data)
+            
 
-
-curses.wrapper(main)
 
 
 if __name__ == "__main__":
-    main(stdscr=curses.initscr())
+    wrapper(main)
