@@ -1,6 +1,5 @@
 from __future__ import annotations
 import typing
-import subprocess
 import pickle
 import curses
 import random
