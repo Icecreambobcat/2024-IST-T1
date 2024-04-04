@@ -63,3 +63,4 @@ cd ~/<YOUR_USERNAME>/path_to_file
 ```
 
 MAN this project was a pain
+but yeah if you cbf just run it in vscode it'll suck a bit but oh well
