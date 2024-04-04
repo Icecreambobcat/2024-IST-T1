@@ -201,6 +201,21 @@ def save(local_data: dict[str, typing.Any]) -> None:
         with open('save.txt', 'wb') as save_file:
             pickle.dump(local_data, save_file)
     except Exception:
+        text_win.clear()
+        text_win.refresh()
+        curses.init_pair(9, curses.COLOR_RED, curses.COLOR_BLACK)
+        for c in "Save failed. Please try again.":
+            text_win.addstr(c, curses.color_pair(9) | curses.A_BOLD)
+            text_win.refresh()
+            time.sleep(0.01)
+        
+        time.sleep(2)
+
+        for i in range (5):
+            text_win.clear()
+            text_win.addstr(f'Returning in: {i+1}...', curses.color_pair(9) | curses.A_BOLD)
+            text_win.refresh()
+            time.sleep(1)
         return
 
 
@@ -268,13 +283,13 @@ def display(index: int, window: curses.window) -> None:
         sp(f"2. {obj.choice2}", window)
         window.addstr('\n')
         sp("Please enter your choice:", window)
-    elif text_store[index].__class__.__name__ == "fight":
+    elif obj.__class__.__name__ == "fight":
         for w in obj.text:
             out.append(w)
         for lines in out:
             sp(lines, window)
             window.addstr('\n')
-    elif text_store[index].__class__.__name__ == "intro":
+    elif obj.__class__.__name__ == "intro":
         for w in obj.text:
             out.append(w)
         for lines in out:
@@ -282,6 +297,43 @@ def display(index: int, window: curses.window) -> None:
             window.addstr('\n')
     else:
         sp("Files corrupted. Please reinstall the game.", window)
+        
+
+def display_instant(index: int, window: curses.window) -> None:
+
+    obj = text_store[index]
+    out = []
+
+    if obj.__class__.__name__ == "story":
+        for w in obj.text:
+            out.append(w)
+        for lines in out:
+            window.addstr(lines)
+            window.addstr('\n')
+    elif text_store[index].__class__.__name__ == "question":
+        for w in obj.question:
+            out.append(w)
+        for lines in out:
+            window.addstr(lines)
+            window.addstr('\n')
+        window.addstr(f"1. {obj.choice1}")
+        window.addstr('\n')
+        window.addstr(f"2. {obj.choice2}")
+        window.addstr('\n')
+    elif obj.__class__.__name__ == "fight":
+        for w in obj.text:
+            out.append(w)
+        for lines in out:
+            window.addstr(lines)
+            window.addstr('\n')
+    elif obj.__class__.__name__ == "intro":
+        for w in obj.text:
+            out.append(w)
+        for lines in out:
+            window.addstr
+            window.addstr('\n')
+    else:
+        window.addstr("Files corrupted. Please reinstall the game.")
 
 
 def scroll_print(line: str, window: curses.window) -> None:
@@ -350,9 +402,11 @@ def main(stdscr) -> None:
         tempwin.addstr(c)
         time.sleep(0.002)
         tempwin.refresh()
+
     txt = tempwin.getkey()
     if not txt.isalnum(): # because launching it in the mac terminal has this dumb bug of pressing some weird key
         tempwin.getch()
+
     tempwin.clear()
     tempwin.refresh()
     stdborder.clear()
@@ -371,10 +425,7 @@ def main(stdscr) -> None:
         local_data: dict[str, typing.Any] = save_data
     else:
         local_data['first_play'] = True
-        local_data['player'] = None
-        local_data['items'] = []
-        local_data['story_index'] = 0
-        local_data['name'] = None
+        local_data['player'] = player('')
 
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     red_black = curses.color_pair(1)
@@ -420,7 +471,6 @@ def main(stdscr) -> None:
             main_win.refresh()
             time.sleep(0.01)
     if local_data['first_play'] == False:
-        main_win.addstr("\n\n")
         for c in f"Welcome back, {local_data['name']}!\nSure hope you're ready for more adventure.\nTo reset, quit and run 'reset.py'.":
             main_win.addstr(c)
             main_win.refresh()
@@ -437,7 +487,8 @@ def main(stdscr) -> None:
 
     input_win.attron(white_black)
 
-    text_win.getch()
+    if local_data['first_play'] == True:
+        text_win.getch()
 
 
     if local_data['first_play'] == True:
@@ -502,30 +553,39 @@ def main(stdscr) -> None:
                 scroll_print(c, text_win)
 
     main_win.attron(red_black | curses.A_BOLD)
-    scroll_print(f"\n\nPress any key to continue...\nMay your journey be eventful, ", main_win)
+    for c in f"\n\nPress any key to continue...\nMay your journey be eventful, ":
+        scroll_print(c, main_win)
     main_win.attron(yellow_black | curses.A_UNDERLINE)
-    scroll_print(f"{local_data['name']}.", main_win)
+    name_ln = f"{local_data['name']}."
+    for c in name_ln:
+        scroll_print(c, main_win)
     main_win.attroff(yellow_black | curses.A_UNDERLINE)
     main_win.attroff(red_black | curses.A_BOLD)
     main_win.attron(cyan_black)
     input_win.getch()
+
+    prev_index = -1
     
     while True: # game loop: build the rest in here
         main_win.clear()
         main_win.refresh()
 
-        index = local_data['story_index']
+        index = local_data['player'].story_index
+        obj = text_store[index]
         
-        # incorporate display function right here
-        item_ref()
-        display(index, main_win)
+        if prev_index != index:
+            item_ref()
+            display(index, main_win)
+        else:
+            display_instant(index, main_win)
 
-        if text_store[index].pointer == index:
-            break
+        # if text_store[index].pointer == index:
+        #     break
 
-        elif text_store[index].__class__.__name__ == 'intro':
-            local_data['story_index'] = text_store[index].pointer
-            for c in f"\n\nPress any key to continue...\n\nPress ESC to save and quit.":
+        if obj.__class__.__name__ == 'intro':
+            prev_index = index
+            local_data['player'].story_index = obj.pointer
+            for c in "\n\nPress any key to continue...\n\nPress ESC to save and quit.":
                 main_win.addstr(c)
                 main_win.refresh()
                 time.sleep(0.01)
@@ -533,17 +593,50 @@ def main(stdscr) -> None:
             if esc == 27:
                 break
             
-        elif text_store[index].__class__.__name__ =='story':
-            gather_input()
-            pass
+        elif obj.__class__.__name__ =='story':
+            prev_index = index
+            local_data['player'].story_index = obj.pointer
+            for c in "\n\nPress any key to continue...\n\nPress ESC to save and quit.":
+                main_win.addstr(c)
+                main_win.refresh()
+                time.sleep(0.01)
+            esc = input_win.getch()
+            if esc == 27:
+                break
 
-        elif text_store[index].__class__.__name__ == 'question':
+        elif obj.__class__.__name__ == 'question':
+            prev_index = index
             gather_input()
-            pass
+            result = obj.check(key)
+            if result == ["Invalid input", index]:
+                for c in "Invalid input. Please try again.":
+                    text_win.addstr(c, red_black | curses.A_BOLD)
+                    text_win.refresh()
+                    time.sleep(0.01)
+                time.sleep(2)
+                continue
+            if result == [obj.result1, obj.pointer1]:
+                local_data['player'].story_index = obj.pointer1
+            elif result == [obj.result2, obj.pointer2]:
+                local_data['player'].story_index = obj.pointer2
+            
     
-        elif text_store[index].__class__.__name__ == 'fight':
+        elif obj.__class__.__name__ == 'fight':
+            prev_index = index
             gather_input()
-            pass
+            if key == 1:
+                pass
+            elif key == 2:
+                pass
+            elif key == 3:
+                pass
+            else: 
+                for c in "Invalid input. Please try again.":
+                    text_win.addstr(c, red_black | curses.A_BOLD)
+                    text_win.refresh()
+                    time.sleep(0.01)
+                time.sleep(2)
+                continue
 
         input_win.move(0, 0)
 
