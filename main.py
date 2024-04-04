@@ -19,20 +19,17 @@ class player:
 
         items: list[str] - list of items the player has
         story_index: int - index of the current story text
-        lives: int - number of lives the player has
         name: str - name of the player
 
         """
         self.items = []
         self.story_index = 0
-        self.lives = 3
         self.name = name
         
     def packege_data(self) -> dict[str, typing.Any]:
         return {
             'items': self.items,
             'story_index': self.story_index,
-            'lives': self.lives,
             'name': self.name
         }
 
@@ -149,8 +146,8 @@ def init_all() -> dict[int, typing.Any]:
 
     def init_questions() -> dict[int, question]:
         out = {}
-        with open('questions.csv', 'r') as file:
-            questions_csv = csv.reader(file)
+        with open('questions.csv', 'r', newline= '') as file:
+            questions_csv = csv.reader(file, delimiter= ':')
             next(questions_csv)   
             for line in questions_csv:
                 obj = question(line[0].split('#'), line[1], line[2], line[3], line[4], int(line[5]), int(line[6]), int(line[7]))
@@ -171,8 +168,8 @@ def init_all() -> dict[int, typing.Any]:
 
     def init_story() -> dict[int, story]:
         out = {}
-        with open('story.csv', 'r') as file:
-            story_csv = csv.reader(file)
+        with open('story.csv', 'r', newline= '') as file:
+            story_csv = csv.reader(file, delimiter= ':')
             next(story_csv)
             for line in story_csv:
                 obj = story(line[0].split('#'), int(line[1]), int(line[2]))
@@ -182,8 +179,8 @@ def init_all() -> dict[int, typing.Any]:
 
     def init_fights() -> dict[int, fight]:
         out = {}
-        with open('fights.csv', 'r') as file:
-            fights_csv = csv.reader(file)
+        with open('fights.csv', 'r', newline= '') as file:
+            fights_csv = csv.reader(file, delimiter= ':')
             next(fights_csv)
             for line in fights_csv:
                 obj = fight(line[0].split('#'), line[1].split('#'), line[2].split('#'), line[3].split('#'), int(line[4]), int(line[5]), int(line[6]), int(line[7]))
@@ -199,24 +196,23 @@ def init_all() -> dict[int, typing.Any]:
     return out
 
 
-def save(local_data: dict[str, typing.Any]) -> None | int:
+def save(local_data: dict[str, typing.Any]) -> None:
     try:
         with open('save.txt', 'wb') as save_file:
             pickle.dump(local_data, save_file)
     except Exception:
-        return 0
+        return
 
 
-def read() -> dict[str, typing.Any] | None:
+def read() -> dict[str, typing.Any]:
     try:
         with open('save.txt', 'rb') as save_file:
             local_data = pickle.load(save_file)
             if local_data is None or not dict:
-                return None
+                return {}
             else: return local_data
     except Exception:
-        return None
-
+        return {}
 
 def roll_dice(d: int, count: int, type: str) -> int:
     # where d is sides, count is number of dice, and type is how to combine results
@@ -234,11 +230,13 @@ def roll_dice(d: int, count: int, type: str) -> int:
 
 
 def recreate_player(data: dict[str, typing.Any]) -> player:
-    p = player(data['name'])
-    p.items = data['items']
-    p.story_index = data['story_index']
-    p.lives = data['lives']
-    return p
+    try:
+        p = player(data['name'])
+        p.items = data['items']
+        p.story_index = data['story_index']
+        return p
+    except Exception:
+        return player("")
 
 
 def display(index: int, window: curses.window) -> None:
@@ -246,47 +244,84 @@ def display(index: int, window: curses.window) -> None:
     obj = text_store[index]
     out = []
 
-   # if obj.__class__.__name__ == "story":
-   #     for w in obj.text:
-   #         out.append(w)
-   #     for lines in out:
-   #         window.addstr(lines) # figure how to make it look good
-   # elif text_store[index].__class__.__name__ == "question":
-   #     for w in obj.question:
-   #         out.append(w)
-   #     for lines in out:
-   #         window.addstr(lines) # figure how to make it look good
-   # elif text_store[index].__class__.__name__ == "fight":
-   #     for w in obj.text:
-   #         out.append(w)
-   #     for lines in out:
-   #         window.addstr(lines)
-    if text_store[index].__class__.__name__ == "intro":
-        counter = 0
+    def sp(line: str, window: curses.window) -> None:
+        for c in line:      
+            window.addstr(c)
+            window.refresh()
+            time.sleep(0.02)
+
+
+    if obj.__class__.__name__ == "story":
         for w in obj.text:
             out.append(w)
         for lines in out:
-            counter += 1
-            window.addstr(counter - 1, 0, lines)
-            window.refresh()
-   # else:
-   #     raise Exception("Invalid object type")
-   #     # what else though
+            sp(lines, window)
+            window.addstr('\n')
+    elif text_store[index].__class__.__name__ == "question":
+        for w in obj.question:
+            out.append(w)
+        for lines in out:
+            sp(lines, window)
+            window.addstr('\n')
+        sp(f"1. {obj.choice1}", window)
+        window.addstr('\n')
+        sp(f"2. {obj.choice2}", window)
+        window.addstr('\n')
+        sp("Please enter your choice:", window)
+    elif text_store[index].__class__.__name__ == "fight":
+        for w in obj.text:
+            out.append(w)
+        for lines in out:
+            sp(lines, window)
+            window.addstr('\n')
+    elif text_store[index].__class__.__name__ == "intro":
+        for w in obj.text:
+            out.append(w)
+        for lines in out:
+            sp(lines, window)
+            window.addstr('\n')
+    else:
+        sp("Files corrupted. Please reinstall the game.", window)
 
+
+def scroll_print(line: str, window: curses.window) -> None:
+    window.addstr(line)
+    window.refresh()
+    time.sleep(0.02)
+    
 
 def main(stdscr) -> None:
 
     def set_terminal_size():
         # For macOS
-        os.system('osascript -e \'tell application "Terminal" to tell front window to set {rows, columns} to {26, 104}\'')
+        os.system('osascript -e \'tell application "Terminal" to set size of window 1 to {740, 400}\'')
 
-        # For some Windows systems
-        # os.system('mode con: cols=104 lines=26')
+    def gather_input() -> None:
+        global key
+        key = 'Placeholder'
+        while key == 'Placeholder' or key == '':
+            input_box.edit()
+            key = input_box.gather().strip().lower()
+            input_win.clear()
+            if key == '':
+                text_win.addstr('\n\n\n\n\n')
+                for c in "No blank inputs, adventurer.":
+                    text_win.addstr(c, red_black | curses.A_BOLD)
+                    text_win.refresh()
+                    time.sleep(0.02)
 
-        # For some Unix-based systems
-        # os.system('resize -s 26 104')
+        if key.lower().strip() == "quit": # save and exit
+            curses.nocbreak()
+            save(local_data)
+            quit()
+
+        elif key.lower().strip() == "save":
+            save(local_data)
+
 
     set_terminal_size()
+    stdscr.clear()
+    stdscr.refresh()
 
     global main_win, text_win, main_border, text_border, input_win, text_store
 
@@ -297,23 +332,28 @@ def main(stdscr) -> None:
 
     save_data = read()
 
-    if save_data != None:
+    if save_data != {}:
         local_data: dict[str, typing.Any] = save_data
     else:
         local_data['first_play'] = True
-        local_data['name'] = ""
+        local_data['player'] = None
         local_data['items'] = []
         local_data['story_index'] = 0
-        local_data['lives'] = 3
+        local_data['name'] = None
 
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     red_black = curses.color_pair(1)
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
     green_black = curses.color_pair(2)
-    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    invert = curses.color_pair(3)
+    curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    yellow_black = curses.color_pair(3)
     curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
     cyan_black = curses.color_pair(4)
+    curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    blue_black = curses.color_pair(5)
+    curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    white_black = curses.color_pair(6)
+
 
     stdscr.clear()
     curses.cbreak()
@@ -330,7 +370,7 @@ def main(stdscr) -> None:
     main_win.attron(cyan_black)
     text_win.attron(green_black)
     text_border.attron(green_black)
-    input_win.attron(red_black)
+    main_border.attron(cyan_black)
 
 
     main_border.border()
@@ -339,20 +379,38 @@ def main(stdscr) -> None:
     main_border.refresh()
     text_border.refresh()
 
-    main_win.addstr(0, 0, "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.")
-    text_win.addstr(0, 0, "You'll type your input here.\nPress Ctrl+G to confirm inputs.")
+    for c in "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.\nWhen running in vscode, press twice.\n\nIf you already have a save file, please type 'recreate'.":
+        main_win.addstr(c)
+        main_win.refresh()
+        time.sleep(0.02)
+    if local_data['first_play'] == False:
+        main_win.addstr("\n\n")
+        for c in f"Welcome back, {local_data['name']}!\nSure hope you're ready for more adventure.\nTo reset, quit and run 'reset.py'.":
+            main_win.addstr(c)
+            main_win.refresh()
+            time.sleep(0.02)
+    for c in "You'll type your input here.\nPress Ctrl+G to confirm inputs.":
+        text_win.addstr(c)
+        text_win.refresh()
+        time.sleep(0.02)
 
     main_win.refresh()
     text_win.refresh()
 
-
     input_win.move(0, 0)
-    text_win.getch()
-    
+
+    input_win.attron(white_black)
+
+    for i in range(2):
+        text_win.getch()
+
 
     if local_data['first_play'] == True:
-        text_win.addstr(3, 0, "Please enter your name:", red_black)
-        text_win.refresh()
+        text_win.addstr('\n\n')
+        for c in "Please enter your name:\nMaximum 16 characters.":
+            text_win.addstr(c, red_black | curses.A_BOLD)
+            text_win.refresh()
+            time.sleep(0.02)
         while True: 
             input_box.edit()
             name = input_box.gather().strip()
@@ -364,39 +422,109 @@ def main(stdscr) -> None:
                 save(local_data)
                 quit()
 
-            elif name != "":
+            elif name.lower() == "recreate":
+                recreate = recreate_player(save_data)
+                if recreate.name == "" or len(recreate.name) > 16:
+                    text_win.clear()
+                    text_win.addstr("Please enter your name:\nMaximum 16 characters.")
+                    text_win.addstr('\n\n')
+                    for c in "No save file found/savename too long.\nPlease enter your name.":
+                        text_win.addstr(c, red_black | curses.A_BOLD)
+                        text_win.refresh()
+                        time.sleep(0.02)
+                    continue
                 local_data['first_play'] = False
-                local_data['name'] = name
+                local_data['player'] = recreate
+                local_data['name'] = local_data['player'].name
                 input_win.clear()
                 break
 
-            elif name == "":
-                text_win.addstr(4, 0, "Please enter a valid name.\nNo blank names, nameless wanderer.", red_black)
-                text_win.refresh()
+            elif name != "" and len(name) <= 16:
+                local_data['first_play'] = False
+                local_data['player'] = player(name)
+                local_data['name'] = local_data['player'].name
+                input_win.clear()
+                break
+
+            elif name == "" or len(name) > 16:
+                text_win.clear()
+                text_win.addstr("Please enter your name:\nMaximum 16 characters.")
+                text_win.addstr('\n\n')
+                for c in "Please enter a shorter name.\nNo blank names either, nameless.":
+                    text_win.addstr(c, red_black | curses.A_BOLD)
+                    text_win.refresh()
+                    time.sleep(0.02)
                 continue
 
 
-
-    while True: # game loop: build the rest in here
+    def item_ref() -> None:
         text_win.clear()
+        for c in "Items: ":
+            scroll_print(c, text_win)
+        for item in local_data['player'].items:
+            text_win.addstr('\n')
+            for c in item:
+                scroll_print(c, text_win)
+
+    main_win.attron(red_black | curses.A_BOLD)
+    scroll_print(f"\n\nPress any key to continue...\nMay your journey be fruitful, ", main_win)
+    main_win.attron(yellow_black | curses.A_UNDERLINE)
+    scroll_print(f"{local_data['name']}!", main_win)
+    main_win.attroff(yellow_black | curses.A_UNDERLINE)
+    main_win.attroff(red_black | curses.A_BOLD)
+    main_win.attron(cyan_black)
+    input_win.getch()
+    
+    while True: # game loop: build the rest in here
         main_win.clear()
         main_win.refresh()
-        text_win.refresh()
 
+        index = local_data['story_index']
+        
         # incorporate display function right here
-        display(local_data['story_index'], main_win)
+        item_ref()
+        display(index, main_win)
 
-        input_box.edit()
-        key = input_box.gather().strip().lower()
-        input_win.clear()
-        if key.lower().strip() == "quit": # save and exit
-            curses.nocbreak()
-            save(local_data)
-            quit()
-        elif key.lower().strip() == "save":
-            save(local_data)
+        if text_store[index].pointer == index:
+            break
+
+        elif text_store[index].__class__.__name__ == 'intro':
+            local_data['story_index'] = text_store[index].pointer
+            for c in f"\n\nPress any key to continue...":
+                main_win.addstr(c)
+                main_win.refresh()
+                time.sleep(0.02)
+            input_win.getch()
             
+        elif text_store[index].__class__.__name__ =='story':
+            gather_input()
+            pass
 
+        elif text_store[index].__class__.__name__ == 'question':
+            gather_input()
+            pass
+    
+        elif text_store[index].__class__.__name__ == 'fight':
+            gather_input()
+            pass
+
+        input_win.move(0, 0)
+
+    
+    save(local_data)
+    quit()
+
+
+        
+            
+def reset() -> None:
+    directory = os.getcwd()
+    os.system(f'cd {directory} && rm -f save.txt && touch save.txt')
+
+
+def launch() -> None:
+    directory = os.getcwd()
+    os.system(f'osascript -e \'tell application "Terminal" to do script "cd {directory} && python3 main.py && exit"\'')
 
 
 if __name__ == "__main__":
