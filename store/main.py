@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing
+import subprocess
 import pickle
 import curses
 import random
@@ -322,6 +323,41 @@ def main(stdscr) -> None:
     set_terminal_size()
     stdscr.clear()
     stdscr.refresh()
+    stdborder = curses.newwin(26, 104, 0, 0)
+    stdborder.border()
+    stdborder.refresh()
+    tempwin = curses.newwin(24, 102, 1, 1)
+    for c in r"""
+          ___           ___           ___           ___      
+         /  /\         /  /\         /  /\         /  /\         Game by:
+        /  /::\       /  /:/        /  /::\       /  /:/         Icecreambobcat
+       /  /:/\:\     /  /:/        /__/:/\:\     /  /:/          ft. Moshyking as the voice actor
+      /  /:/  \:\   /  /:/        _\_ \:\ \:\   /  /::\____      (Planned for 1.0, at least)
+     /__/:/ \__\:| /__/:/     /\ /__/\ \:\ \:\ /__/:/\:::::\     (As for now, we're at 0.1 :skull:)
+     \  \:\ /  /:/ \  \:\    /:/ \  \:\ \:\_\/ \__\/~|:|~~~~     
+      \  \:\  /:/   \  \:\  /:/   \  \:\_\:\      |  |:|         As the dusk rolls over
+       \  \:\/:/     \  \:\/:/     \  \:\/:/      |  |:|         Evening falls upon the land
+        \__\::/       \  \::/       \  \::/       |__|:|         The stars twinkle in the sky
+            ~~         \__\/         \__\/         \__\|         Find your truth. Find your way.
+                      
+            Press any alphanumeric key to continue...       
+                   
+            
+
+                            Sure hope you have a great time playing,
+                            because I sure as hell didn't enjoy making this.
+                            - The Developer
+                   """:
+        tempwin.addstr(c)
+        time.sleep(0.002)
+        tempwin.refresh()
+    txt = tempwin.getkey()
+    if not txt.isalnum(): # because launching it in the mac terminal has this dumb bug of pressing some weird key
+        tempwin.getch()
+    tempwin.clear()
+    tempwin.refresh()
+    stdborder.clear()
+    stdborder.refresh()
 
     global main_win, text_win, main_border, text_border, input_win, text_store
 
@@ -379,10 +415,11 @@ def main(stdscr) -> None:
     main_border.refresh()
     text_border.refresh()
 
-    for c in "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.\nWhen running in vscode, press twice.\n\nIf you already have a save file, please type 'recreate'.":
-        main_win.addstr(c)
-        main_win.refresh()
-        time.sleep(0.02)
+    if local_data['first_play'] == True:
+        for c in "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.\n\nIf you already have a save file, please type 'recreate'.":
+            main_win.addstr(c)
+            main_win.refresh()
+            time.sleep(0.01)
     if local_data['first_play'] == False:
         main_win.addstr("\n\n")
         for c in f"Welcome back, {local_data['name']}!\nSure hope you're ready for more adventure.\nTo reset, quit and run 'reset.py'.":
@@ -392,7 +429,7 @@ def main(stdscr) -> None:
     for c in "You'll type your input here.\nPress Ctrl+G to confirm inputs.":
         text_win.addstr(c)
         text_win.refresh()
-        time.sleep(0.02)
+        time.sleep(0.01)
 
     main_win.refresh()
     text_win.refresh()
@@ -401,8 +438,7 @@ def main(stdscr) -> None:
 
     input_win.attron(white_black)
 
-    for i in range(2):
-        text_win.getch()
+    text_win.getch()
 
 
     if local_data['first_play'] == True:
@@ -410,7 +446,7 @@ def main(stdscr) -> None:
         for c in "Please enter your name:\nMaximum 16 characters.":
             text_win.addstr(c, red_black | curses.A_BOLD)
             text_win.refresh()
-            time.sleep(0.02)
+            time.sleep(0.01)
         while True: 
             input_box.edit()
             name = input_box.gather().strip()
@@ -431,7 +467,7 @@ def main(stdscr) -> None:
                     for c in "No save file found/savename too long.\nPlease enter your name.":
                         text_win.addstr(c, red_black | curses.A_BOLD)
                         text_win.refresh()
-                        time.sleep(0.02)
+                        time.sleep(0.01)
                     continue
                 local_data['first_play'] = False
                 local_data['player'] = recreate
@@ -453,7 +489,7 @@ def main(stdscr) -> None:
                 for c in "Please enter a shorter name.\nNo blank names either, nameless.":
                     text_win.addstr(c, red_black | curses.A_BOLD)
                     text_win.refresh()
-                    time.sleep(0.02)
+                    time.sleep(0.01)
                 continue
 
 
@@ -467,9 +503,9 @@ def main(stdscr) -> None:
                 scroll_print(c, text_win)
 
     main_win.attron(red_black | curses.A_BOLD)
-    scroll_print(f"\n\nPress any key to continue...\nMay your journey be fruitful, ", main_win)
+    scroll_print(f"\n\nPress any key to continue...\nMay your journey be eventful, ", main_win)
     main_win.attron(yellow_black | curses.A_UNDERLINE)
-    scroll_print(f"{local_data['name']}!", main_win)
+    scroll_print(f"{local_data['name']}.", main_win)
     main_win.attroff(yellow_black | curses.A_UNDERLINE)
     main_win.attroff(red_black | curses.A_BOLD)
     main_win.attron(cyan_black)
@@ -490,11 +526,13 @@ def main(stdscr) -> None:
 
         elif text_store[index].__class__.__name__ == 'intro':
             local_data['story_index'] = text_store[index].pointer
-            for c in f"\n\nPress any key to continue...":
+            for c in f"\n\nPress any key to continue...\n\nPress ESC to save and quit.":
                 main_win.addstr(c)
                 main_win.refresh()
-                time.sleep(0.02)
-            input_win.getch()
+                time.sleep(0.01)
+            esc = input_win.getch()
+            if esc == 27:
+                break
             
         elif text_store[index].__class__.__name__ =='story':
             gather_input()
