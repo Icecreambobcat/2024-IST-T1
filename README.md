@@ -5,6 +5,7 @@
 This project is created as a standalone python game that runs in the terminal, as an answer to the text-based criteria of **Assessment No.1** of this year
 
 Do note that this game will only function correctly on OSX devices.
+If the native mac terminal is a bit buggy then just quit and refresh it
 
 ## How do I run the game?
 
