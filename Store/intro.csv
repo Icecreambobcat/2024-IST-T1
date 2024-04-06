@@ -1,3 +1,4 @@
 text_list(seperator #):index:pointer
 "You know, I thought you'd do better.#How you ended up here, I have no idea. Oh well.#Maybe I should tell you how this all started.":0:1
 "You're... sort of here and not here at the same time.#This world is a dreamscape,#nothing here will change the real world.#Although...#If you die here, you die in real life. Don't dissapoint me.":1:2
+"Well, time to head off.#You're currently at the front lobby of the 'Tower of Dusk'##write your own path then,#you're on your own.":2:3
