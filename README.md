@@ -54,6 +54,8 @@ cd ~/<YOUR_USERNAME>/path_to_file
 
 You should be good to go from there!
 
+Alternatively, just run the launcher file from vscode, and if you have access to your terminal it should work.
+
 ### Misc
 
 To reset:
@@ -62,6 +64,8 @@ To reset:
 cd ~/<YOUR_USERNAME>/path_to_file
 ./.runscript.zsh reset.py
 ```
+
+Alterntive run method is the same as launch
 
 MAN this project was a pain
 but yeah if you cbf just run it in vscode it'll suck a bit but oh well
