@@ -946,7 +946,7 @@ def main(stdscr) -> None:
             
 def reset() -> None:
     directory = os.getcwd()
-    os.system(f'cd {directory} && cd ./Store && rm -f save.dat && touch save.dat')
+    os.system(f'cd {directory} && rm -f save.dat && touch save.dat')
 
 
 def launch() -> None:
