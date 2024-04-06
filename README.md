@@ -10,6 +10,8 @@ Expansion releases (if I bother with them) will be released on here.
 Honestly for me the best way to run and keep up to date is just to `git clone` the repo and `git pull` whenever you want to update.
 Do be sure though to maintain a copy of `save.dat` to keep your progress.
 
+[Here's](https://www.icloud.com/freeform/02cHPE95WhLR1DRTar9rz-5xw) a link to see the approximate story layout for the game and any upcoming expansions. This story and any other characters present are my intellectual property, and reuse without written permission is prohibited.
+
 ## How do I run the game?
 
 Don't worry, I planned around this being a bit of a pain to mark and release, so I included dedicated scripts and programs to help run the code.
