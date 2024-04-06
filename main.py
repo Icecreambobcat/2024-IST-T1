@@ -310,15 +310,18 @@ def main(stdscr) -> None:
     def gather_input() -> None:
         global key
         key = 'Placeholder'
+
         while key == 'Placeholder' or key == '':
             input_win.clear()
             input_box.edit()
             key = input_box.gather().strip().lower()
             input_win.clear()
+
             if key == '':
                 text_win.clear()
                 item_ref()
                 text_win.addstr('\n\n')
+
                 for c in "No blank inputs, adventurer.":
                     text_win.addstr(c, red_black | curses.A_BOLD)
                     text_win.refresh()
@@ -397,6 +400,7 @@ def main(stdscr) -> None:
 
     if save_data != {}:
         local_data: dict[str, typing.Any] = save_data
+
     else:
         local_data['first_play'] = True
         local_data['player'] = player('')
@@ -447,12 +451,14 @@ def main(stdscr) -> None:
             main_win.addstr(c)
             main_win.refresh()
             time.sleep(0.01)
+
     if local_data['first_play'] == False:
         for c in f"Welcome back, {local_data['name']}!\nSure hope you're ready for more adventure.\nTo reset, quit and run 'reset.py'.":
             main_win.addstr(c)
             main_win.refresh()
             time.sleep(0.01)
-    for c in "You'll type your input here.\nPress Ctrl+G to confirm inputs.":
+
+    for c in "You'll type your input here.\nPress Ctrl+G to confirm inputs.\nType 'save' to well, save.":
         text_win.addstr(c)
         text_win.refresh()
         time.sleep(0.01)
@@ -467,8 +473,10 @@ def main(stdscr) -> None:
 
 
     text_win.nodelay(False)
+
     if local_data['first_play'] == True:
         text_win.getch()
+
     text_win.nodelay(True)
 
     input_win.attron(white_black)
@@ -477,10 +485,12 @@ def main(stdscr) -> None:
 
     if local_data['first_play'] == True:
         text_win.addstr('\n\n')
+
         for c in "Please enter your name:\nMaximum 16 characters.":
             text_win.addstr(c, red_black | curses.A_BOLD)
             text_win.refresh()
             time.sleep(0.01)
+
         while True: 
             input_win.clear()
             input_box.edit()
@@ -503,6 +513,7 @@ def main(stdscr) -> None:
                         text_win.refresh()
                         time.sleep(0.01)
                     continue
+
                 local_data['first_play'] = False
                 local_data['player'] = recreate
                 local_data['name'] = local_data['player'].name
@@ -520,6 +531,7 @@ def main(stdscr) -> None:
                 text_win.clear()
                 text_win.addstr("Please enter your name:\nMaximum 16 characters.")
                 text_win.addstr('\n\n')
+
                 for c in "Please enter a shorter name.\nNo blank names either, nameless.":
                     text_win.addstr(c, red_black | curses.A_BOLD)
                     text_win.refresh()
@@ -531,23 +543,30 @@ def main(stdscr) -> None:
         text_win.clear()
         for c in "Items: ":
             scroll_print(c, text_win)
+
         for item in local_data['player'].items:
             text_win.addstr('\n')
+
             for c in item:
                 scroll_print(c, text_win)
 
 
     main_win.attron(red_black | curses.A_BOLD)
+
     for c in f"\n\nPress any key to continue...\n\nMay your journey be eventful, ":
         scroll_print(c, main_win)
+
     while input_win.getch() != -1:
         pass
+
     main_win.attron(yellow_black | curses.A_UNDERLINE)
     name_ln = f"{local_data['name']}"
     for c in name_ln:
         scroll_print(c, main_win)
+
     while input_win.getch() != -1:
         pass
+
     main_win.attroff(yellow_black | curses.A_UNDERLINE)
     main_win.attron(red_black | curses.A_BOLD)
     main_win.addstr("!")
@@ -683,10 +702,41 @@ def main(stdscr) -> None:
                 time.sleep(2)
                 continue
             if result == [obj.result1, obj.pointer1]:
+                main_win.addstr('\n\n')
+                for c in obj.result1:
+                    scroll_print(c, main_win)
+
+                main_win.addstr('\n\n')
+                for c in "Press any key to continue...":
+                    scroll_print(c, main_win)
+                
+                while input_win.getch() != -1:
+                    pass
+
+                input_win.nodelay(False)
+                input_win.getch()
+                input_win.nodelay(True)
+
                 local_data['player'].story_index = obj.pointer1
+
             elif result == [obj.result2, obj.pointer2]:
+                main_win.addstr('\n\n')
+                for c in obj.result2:
+                    scroll_print(c, main_win)
+
+                main_win.addstr('\n\n')
+                for c in "Press any key to continue...":
+                    scroll_print(c, main_win)
+
+                while input_win.getch() != -1:
+                    pass
+
+                input_win.nodelay(False)
+                input_win.getch()
+                input_win.nodelay(True)
+
                 local_data['player'].story_index = obj.pointer2
-            
+
     
         elif obj.__class__.__name__ == 'fight':
             for c in "\n\nPress any key to continue...\n\nPress ESC to save and quit.":
@@ -798,23 +848,22 @@ def main(stdscr) -> None:
             input_win.getch()
             input_win.nodelay(True)
 
-            if 'Mysterious Potion' in local_data['player'].items:
-                for c in "You have a mysterious potion! Would you like to use it? (y/n)":
-                    text_win.addstr(c)
-                    text_win.refresh()
-                    time.sleep(0.01)
-
+            if 'Cheat dice' in local_data['player'].items:
+                main_win.clear()
+                for c in "You have some weighted dice!\nWould you like to use it? (y/n)":
+                    scroll_print(c, main_win)
+                
                 while True:
                     gather_input()
                     if key == 'y':
-                        local_data['player'].items.remove('Mysterious Potion')
+                        local_data['player'].items.remove('Cheat dice')
                         out = 1
                         break
                     elif key == 'n':
                         pass
                         break
                     else:
-                        for c in "Invalid input. Potion not used.":
+                        for c in "Invalid input. item not used.":
                             text_win.addstr(c, red_black | curses.A_BOLD)
                             text_win.refresh()
                             time.sleep(0.01)
@@ -825,28 +874,65 @@ def main(stdscr) -> None:
 
             if out == 1:
                 local_data['player'].story_index = obj.pointer1
+
+                main_win.addstr('\n\n')
                 for c in obj.outcome1:
-                    text_win.addstr(c)
-                    text_win.refresh()
-                    time.sleep(0.01)
+                    scroll_print(c, main_win)
+
+                main_win.addstr('\n\n')
+                for c in "Press any key to continue...":
+                    scroll_print(c, main_win)
+
+                while input_win.getch() != -1:
+                    pass
+
+                input_win.nodelay(False)
+                input_win.getch()
+                input_win.nodelay(True)
+
             elif out == 2:
                 local_data['player'].story_index = obj.pointer2
+                
+                main_win.addstr('\n\n')
                 for c in obj.outcome2:
-                    text_win.addstr(c)
-                    text_win.refresh()
-                    time.sleep(0.01)
+                    scroll_print(c, main_win)
+
+                main_win.addstr('\n\n')
+                for c in "Press any key to continue...":
+                    scroll_print(c, main_win)
+                
+                while input_win.getch() != -1:
+                    pass
+
+                input_win.nodelay(False)
+                input_win.getch()
+                input_win.nodelay(True)
+
             elif out == 3:
                 local_data['player'].story_index = obj.pointer3
+
+                main_win.addstr('\n\n')
                 for c in obj.outcome3:
-                    text_win.addstr(c)
-                    text_win.refresh()
-                    time.sleep(0.01)
+                    scroll_print(c, main_win)
+                    
+                main_win.addstr('\n\n')
+                for c in "Press any key to continue...":
+                    scroll_print(c, main_win)
+
+                input_win.nodelay(False)
+                input_win.getch()
+                input_win.nodelay(True)
+
+                while input_win.getch() != -1:
+                    pass
+
             else: 
                 text_win.addstr('\n\n')
                 for c in "Invalid result. Please try again.":
                     text_win.addstr(c, red_black | curses.A_BOLD)
                     text_win.refresh()
                     time.sleep(0.01)
+
                 time.sleep(2)
 
         input_win.move(0, 0)
