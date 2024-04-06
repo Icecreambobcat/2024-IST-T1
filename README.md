@@ -49,7 +49,7 @@ After that, open up your native terminal and enter the following:
 ```zsh
 chmod +x ~/<YOUR_USERNAME>/path_to_file/runscript.zsh
 cd ~/<YOUR_USERNAME>/path_to_file
-./runscript.zsh launcher.py
+./.runscript.zsh launcher.py
 ```
 
 You should be good to go from there!
@@ -60,7 +60,7 @@ To reset:
 
 ```zsh
 cd ~/<YOUR_USERNAME>/path_to_file
-./runscript.zsh reset.py
+./.runscript.zsh reset.py
 ```
 
 MAN this project was a pain
