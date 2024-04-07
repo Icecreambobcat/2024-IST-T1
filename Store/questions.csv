@@ -1,1 +1,7 @@
 question_text_list(seperator #):choice1:choice2:response1:response2:index:pointer1:pointer2
+"As the elevator comes to a halt at the last floor,#two grand hallways appear before you##Cliche, hey? pick one, then,#maybe it's a skip...":"The left hallway":"The right hallway":"Silencing chills race up your spine...":"The floor glows orange with embers...":5:6:7
+"The path ahead once again diverges,#revealing both the hallways of frost and embers.##Which do you head down?":"The hall of frost":"The hall of embers":"The cold does not forgive...":"May the wrongs of this world be purged in flame...":13:14:15
+"I promised you a choice, and here it is:##Which would you prefer to head to?":"The hall of dreams":"The hall of curses":"Good choice, don't throw it away.":"Oh? Your choice, then.":21:23:24
+"One last chance to choose:##Don't get it wrong, or you could be in for#quite a big surprise.":"I'm sure I want to go this way":"I want to go to the hall of curses":"As you wish.":"My my... Someone hasn't picked that in a while.":23:25:26
+"I'll be nice to you here then,#you may very well find out much more#than you ever wanted to hear or know...":"Refuse fate":"Accept reality":"Suddenly, you hear a voice-":"As the dust settles... so will you.":28:30:31
+"You've lost. We both know that.##Do you wish to spend your last moments refusing fate?":"Yes":"No":"See it through...":"You close your eyes. Night falls one last time.":29:31:32

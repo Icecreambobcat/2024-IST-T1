@@ -591,6 +591,10 @@ def main(stdscr) -> None:
         obj = text_store[index]
 
         display(index, main_win)
+
+        if obj.index == 12:
+            local_data['player'].items.append('Cheat dice')
+
         item_ref()
 
         if obj.__class__.__name__ == 'story' and obj.pointer == obj.index:
@@ -608,10 +612,8 @@ def main(stdscr) -> None:
             break
 
         if obj.__class__.__name__ == 'intro' and obj.pointer == obj.index:
-            for c in "\n\nWell, that does it.\nGo home to your kids, they're still waiting for you.\n\nPress any key to quit.":
-                main_win.addstr(c)
-                main_win.refresh()
-                time.sleep(0.01)
+            for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
+                scroll_print(c, main_win)
 
             while input_win.getch() != -1:
                 pass
@@ -622,10 +624,8 @@ def main(stdscr) -> None:
             break
 
         if obj.__class__.__name__ == 'question' and obj.pointer1 == obj.index and obj.pointer2 == obj.index:
-            for c in "\n\nWell, that does it.\nGo home to your kids, they're still waiting for you.\n\nPress any key to quit.":
-                main_win.addstr(c)
-                main_win.refresh()
-                time.sleep(0.01)
+            for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
+                scroll_print(c, main_win)
 
             while input_win.getch() != -1:
                 pass
@@ -635,11 +635,9 @@ def main(stdscr) -> None:
             input_win.nodelay(True)
             break
 
-        if obj.__class__.__name__ == 'fight' and obj.pointer1 == obj.index and obj.pointer2 == obj.index and obj.pointer3 == obj.index:
-            for c in "\n\nWell, that does it.\nGo home to your kids, they're still waiting for you.\n\nPress any key to quit.":
-                main_win.addstr(c)
-                main_win.refresh()
-                time.sleep(0.01)
+        if obj.__class__.__name__ == 'fight' and obj.pointer1 == obj.index or obj.pointer2 == obj.index or obj.pointer3 == obj.index:
+            for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
+                scroll_print(c, main_win)
 
             while input_win.getch() != -1:
                 pass
