@@ -7,7 +7,9 @@ This project is created as a standalone python game that runs in the terminal, a
 Do note that this game will only function correctly on OSX devices.
 If the native mac terminal is a bit buggy then just quit and refresh it
 Expansion releases (if I bother with them) will be released on here.
-Honestly for me the best way to run and keep up to date is just to `git clone` the repo and `git pull` whenever you want to update.
+Honestly for me the best way to run and keep up to date is just to `gh repo clone Icecreambobcat/2024-IST-T1` the repo and `git pull` in the repo whenever you want to update.
+- Do note that a requisite of this is downloading the official Github CLI tool which can be done easily via `brew install gh` on homebrew.
+
 Do be sure though to maintain a copy of `save.dat` to keep your progress.
 
 [Here's](https://www.icloud.com/freeform/02cHPE95WhLR1DRTar9rz-5xw) a link to see the approximate story layout for the game and any upcoming expansions. This story and any other characters present are my intellectual property, and reuse without written permission is prohibited.
