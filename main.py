@@ -7,6 +7,7 @@ import csv
 import time
 import os
 from curses import wrapper, textpad
+# standard imports and convenience
 
 
 class player:
@@ -32,6 +33,7 @@ class player:
             'story_index': self.story_index,
             'name': self.name
         }
+        # save convenience
 
 
 class question:
@@ -154,6 +156,8 @@ def init_all() -> dict[int, typing.Any]:
                 out [obj.index] = obj
 
         return out
+        # kinda self explanatory in how it works
+    # the rest of the functions are the same as the one above
 
     def init_intro() -> dict[int, intro]:
         out = {}
@@ -192,6 +196,7 @@ def init_all() -> dict[int, typing.Any]:
     for directory in [init_questions(), init_intro(), init_story(), init_fights()]:
         for key in directory.keys():
             out[key] = directory[key]
+    # collates everything into 1 dictionary
 
     return out
 
@@ -217,6 +222,7 @@ def save(local_data: dict[str, typing.Any]) -> None:
             text_win.refresh()
             time.sleep(1)
         return
+    # binary save using the pickle module
 
 
 def read() -> dict[str, typing.Any]:
@@ -228,6 +234,8 @@ def read() -> dict[str, typing.Any]:
             else: return local_data
     except Exception:
         return {}
+    # read save file
+
 
 def roll_dice(d: int, count: int, type: str) -> int:
     # where d is sides, count is number of dice, and type is how to combine results
@@ -239,6 +247,8 @@ def roll_dice(d: int, count: int, type: str) -> int:
         return min([random.randint(1, d) for i in range(count)])
     else:
         return 0
+    # roll dice (this one's for you, D&D players)
+
 
 def recreate_player(data: dict[str, typing.Any]) -> player:
     try:
@@ -248,12 +258,23 @@ def recreate_player(data: dict[str, typing.Any]) -> player:
         return p
     except Exception:
         return player("")
+    # restore froms save
 
 
 def display(index: int, window: curses.window) -> None:
+    """
+    
+    Function to display text on the screen
+
+    This function takes the index of the current event and displays the text on the screen provided
+    There are individual checks for each type of event and the text is displayed accordingly
+    Included is an exception check for corrupted files (not fully implemented but functional enough)
+
+    """
 
     obj = text_store[index]
     out = []
+    # grabs the object from the dictionary
 
     def sp(line: str, window: curses.window) -> None:
         for c in line:      
@@ -264,33 +285,45 @@ def display(index: int, window: curses.window) -> None:
 
     if obj.__class__.__name__ == "story":
         for w in obj.text:
+            # highlight for obj attributes may look off with some themes but they function fine since i accounted for each object type
             out.append(w)
+
         for lines in out:
             sp(lines, window)
             window.addstr('\n')
+
     elif text_store[index].__class__.__name__ == "question":
         for w in obj.question:
             out.append(w)
+
         for lines in out:
             sp(lines, window)
             window.addstr('\n')
+
         sp(f"1. {obj.choice1}", window)
         window.addstr('\n')
+
         sp(f"2. {obj.choice2}", window)
         window.addstr('\n')
+
         sp("Please enter your choice: (int)", window)
+
     elif obj.__class__.__name__ == "fight":
         for w in obj.text:
             out.append(w)
+
         for lines in out:
             sp(lines, window)
             window.addstr('\n')
+            
     elif obj.__class__.__name__ == "intro":
         for w in obj.text:
             out.append(w)
+
         for lines in out:
             sp(lines, window)
             window.addstr('\n')
+
     else:
         sp("Files corrupted. Please reinstall the game.", window)
         
@@ -299,7 +332,9 @@ def scroll_print(line: str, window: curses.window) -> None:
     window.addstr(line)
     window.refresh()
     time.sleep(0.01)
-    
+# this is literally only here because i kinda messed up but can't be bothered to fix it since it's a massive mess with fstrings and future implementations
+# so for now i'm just running this inside of loops
+
 
 def main(stdscr) -> None:
 
@@ -308,6 +343,8 @@ def main(stdscr) -> None:
         os.system('osascript -e \'tell application "Terminal" to set size of window 1 to {740, 400}\'')
 
     def gather_input() -> None:
+        # grabs input and checks for invalid inputs while also handling save and quit
+        # input is global so it can be accessed anywhere necessary for convenience (even if its not great practice i didn't want to bother with chain returns)
         global key
         key = 'Placeholder'
 
@@ -316,6 +353,7 @@ def main(stdscr) -> None:
             input_box.edit()
             key = input_box.gather().strip().lower()
             input_win.clear()
+            # curses method to get input from a box
 
             if key == '':
                 text_win.clear()
@@ -350,6 +388,8 @@ def main(stdscr) -> None:
     tempwin = curses.newwin(24, 102, 1, 1)
     tempwin.nodelay(True)
 
+    # some setup and input ignore
+
     for c in r"""
           ___           ___           ___           ___      
          /  /\         /  /\         /  /\         /  /\         Game by:
@@ -378,6 +418,7 @@ def main(stdscr) -> None:
 
     while tempwin.getch() != -1:
         pass
+    # input ignore
 
     tempwin.nodelay(False)
     txt = tempwin.getkey()
@@ -390,9 +431,11 @@ def main(stdscr) -> None:
     stdborder.refresh()
 
     global main_win, text_win, main_border, text_border, input_win, text_store
+    # i don't even know if this is necessary but i'm too lazy to check, but it probably is and i don't want to fix it
 
     global text_store
     text_store = init_all()
+    # as previously mentioned
 
     local_data = {}
 
@@ -417,6 +460,7 @@ def main(stdscr) -> None:
     blue_black = curses.color_pair(5)
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     white_black = curses.color_pair(6)
+    # inits some colours for the screen, note that some may be unused and some may be used in the future
 
 
     stdscr.clear()
@@ -428,6 +472,7 @@ def main(stdscr) -> None:
     text_border = curses.newwin(26, 42, 0, 0)
 
     input_box = textpad.Textbox(input_win, insert_mode=True)
+    # creates wins
 
 
     main_win.attron(cyan_black)
@@ -445,6 +490,7 @@ def main(stdscr) -> None:
     main_win.nodelay(True)
     text_win.nodelay(True)
     input_win.nodelay(True)
+    # setup
 
     if local_data['first_play'] == True:
         for c in "Welcome to the game!\nPress any key to continue and type 'quit' to save and exit.\n\nIf you already have a save file, please type 'recreate'.":
@@ -452,11 +498,12 @@ def main(stdscr) -> None:
             main_win.refresh()
             time.sleep(0.01)
 
-    if local_data['first_play'] == False:
+    elif local_data['first_play'] == False:
         for c in f"Welcome back, {local_data['name']}!\nSure hope you're ready for more adventure.\nTo reset, quit and run 'reset.py'.":
             main_win.addstr(c)
             main_win.refresh()
             time.sleep(0.01)
+    # checks for first play state and interacts accordingly
 
     for c in "You'll type your input here.\nPress Ctrl+G to confirm inputs.\nType 'save' to well, save.":
         text_win.addstr(c)
@@ -467,6 +514,7 @@ def main(stdscr) -> None:
     text_win.refresh()
 
     input_win.move(0, 0)
+    # afaik this is unnecessary but oh well i cant be bothered
 
     while input_win.getch() != -1:
         pass
@@ -478,6 +526,7 @@ def main(stdscr) -> None:
         text_win.getch()
 
     text_win.nodelay(True)
+    # gets input and then turns ignore back on
 
     input_win.attron(white_black)
 
@@ -518,6 +567,7 @@ def main(stdscr) -> None:
                 local_data['player'] = recreate
                 local_data['name'] = local_data['player'].name
                 input_win.clear()
+                # this and everything that looks similar basically inits plaer data one way or another
                 break
 
             elif name != "" and len(name) <= 16:
@@ -537,6 +587,7 @@ def main(stdscr) -> None:
                     text_win.refresh()
                     time.sleep(0.01)
                 continue
+    # player name and user handling --> may add more than 1 user in ftr
 
 
     def item_ref() -> None:
@@ -549,6 +600,7 @@ def main(stdscr) -> None:
 
             for c in item:
                 scroll_print(c, text_win)
+        # refreshes item list
 
 
     main_win.attron(red_black | curses.A_BOLD)
@@ -577,6 +629,7 @@ def main(stdscr) -> None:
     input_win.nodelay(False)
     input_win.getch()
     input_win.nodelay(True)
+    # some setup as usual
 
     
     while True: # game loop: build the rest in here
@@ -590,15 +643,17 @@ def main(stdscr) -> None:
         index = local_data['player'].story_index
         obj = text_store[index]
 
-        display(index, main_win)
-
         if obj.index == 12:
             local_data['player'].items.append('Cheat dice')
 
         item_ref()
+        # special case for index 12 as that's the only occurance of an item in the game
+        # however future implementations would feature additional properties on the event classes with an items given/taken property
+
+        display(index, main_win)
 
         if obj.__class__.__name__ == 'story' and obj.pointer == obj.index:
-            for c in "\n\nWell, that does it.\nGo home to your kids, they're still waiting for you.\n\nPress any key to quit.":
+            for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
                 main_win.addstr(c)
                 main_win.refresh()
                 time.sleep(0.01)
@@ -646,7 +701,9 @@ def main(stdscr) -> None:
             input_win.getch()
             input_win.nodelay(True)
             break
+        # basically this whole section handles endings
 
+        # the rest of the code is basically just boring and handles every case for each event type
         if obj.__class__.__name__ == 'intro':
             for c in "\n\nPress any key to continue...\n\nPress ESC to save and quit.":
                 main_win.addstr(c)
@@ -664,6 +721,7 @@ def main(stdscr) -> None:
                 local_data['player'].story_index = obj.pointer
                 continue
             input_win.nodelay(True)
+            # once again this is basically handling inputs when you want and don't wan them as well as checking for different inputs
             
         elif obj.__class__.__name__ =='story':
             for c in "\n\nPress any key to continue...\n\nPress ESC to save and quit.":
@@ -850,6 +908,8 @@ def main(stdscr) -> None:
                 main_win.clear()
                 for c in "You have some weighted dice!\nWould you like to use it? (y/n)":
                     scroll_print(c, main_win)
+            # once again specific hardcode solution
+            # not ideal but replaced in ftr
                 
                 while True:
                     gather_input()
@@ -869,6 +929,7 @@ def main(stdscr) -> None:
                         text_win.clear()
                         item_ref()
                         continue
+                # same as above
 
             if out == 1:
                 local_data['player'].story_index = obj.pointer1
@@ -932,12 +993,15 @@ def main(stdscr) -> None:
                     time.sleep(0.01)
 
                 time.sleep(2)
+            # error handling
 
         input_win.move(0, 0)
+        # probably unnecessary
 
     
     save(local_data)
     quit()
+    # if exited through break then save and quit
 
 
         
@@ -945,12 +1009,15 @@ def main(stdscr) -> None:
 def reset() -> None:
     directory = os.getcwd()
     os.system(f'cd {directory} && rm -f save.dat && touch save.dat')
+    # what this does is rm the save file and then make a new one in its place to basically reset the game
 
 
 def launch() -> None:
     directory = os.getcwd()
     os.system(f'osascript -e \'tell application "Terminal" to do script "cd {directory} && python3 main.py && exit"\'')
+    # basically launches the game with applescript in the terminal --> needs terminal access
 
 
 if __name__ == "__main__":
     wrapper(main)
+    # standard boilerplate
