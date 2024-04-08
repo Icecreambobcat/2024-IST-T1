@@ -338,10 +338,6 @@ def scroll_print(line: str, window: curses.window) -> None:
 
 def main(stdscr) -> None:
 
-    def set_terminal_size():
-        # For macOS
-        os.system('osascript -e \'tell application "Terminal" to set size of window 1 to {740, 400}\'')
-
     def gather_input() -> None:
         # grabs input and checks for invalid inputs while also handling save and quit
         # input is global so it can be accessed anywhere necessary for convenience (even if its not great practice i didn't want to bother with chain returns)
@@ -373,8 +369,6 @@ def main(stdscr) -> None:
         elif key.lower().strip() == "save":
             save(local_data)
 
-
-    set_terminal_size()
 
     curses.cbreak()
 
