@@ -390,7 +390,7 @@ def main(stdscr) -> None:
         /  /::\       /  /:/        /  /::\       /  /:/         Icecreambobcat
        /  /:/\:\     /  /:/        /__/:/\:\     /  /:/          ft. Moshyking as the voice actor
       /  /:/  \:\   /  /:/        _\_ \:\ \:\   /  /::\____      (Planned for 1.0.0, at least)
-     /__/:/ \__\:| /__/:/     /\ /__/\ \:\ \:\ /__/:/\:::::\     (As for now, we're at 0.5.0 :skull:)
+     /__/:/ \__\:| /__/:/     /\ /__/\ \:\ \:\ /__/:/\:::::\     (As for now, we're at 0.5.3 :skull:)
      \  \:\ /  /:/ \  \:\    /:/ \  \:\ \:\_\/ \__\/~|:|~~~~     
       \  \:\  /:/   \  \:\  /:/   \  \:\_\:\      |  |:|         As the dusk rolls over
        \  \:\/:/     \  \:\/:/     \  \:\/:/      |  |:|         Evening falls upon the land
