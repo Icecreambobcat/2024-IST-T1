@@ -1012,10 +1012,8 @@ def reset() -> None:
     # what this does is rm the save file and then make a new one in its place to basically reset the game
 
 
-def launch() -> None:
-    directory = os.getcwd()
-    os.system(f'osascript -e \'tell application "Terminal" to do script "cd {directory} && python3 main.py && exit"\'')
-    # basically launches the game with applescript in the terminal --> needs terminal access
+def launcher() -> None:
+    wrapper(main)
 
 
 if __name__ == "__main__":

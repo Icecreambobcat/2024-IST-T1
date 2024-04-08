@@ -1,4 +1,4 @@
-from main import launch
+from main import launcher
 
 if __name__ == '__main__':
-    launch()
+    launcher()
