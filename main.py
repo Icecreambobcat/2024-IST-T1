@@ -37,7 +37,7 @@ class player:
 
 
 class question:
-    def __init__(self, question: list[str], choice1: str, choice2: str, result1: str, result2: str, index: int, pointer1: int, pointer2: int) -> None:
+    def __init__(self, question: list[str], choice1: str, choice2: str, result1: str, result2: str, index: int, pointer: int, pointer2: int) -> None:
         """
         
         Class to store questions, choices, and results for the game as well as point to the next event
@@ -50,7 +50,7 @@ class question:
         result1: str - the result of the first choice
         result2: str - the result of the second choice
         index: int - the index of the current event
-        pointer1: int - the index of the next event if the first choice is chosen
+        pointer: int - the index of the next event if the first choice is chosen
         pointer2: int - the index of the next event if the second choice is chosen
 
         """
@@ -59,13 +59,13 @@ class question:
         self.choice2 = choice2
         self.result1 = result1
         self.result2 = result2
-        self.pointer1 = pointer1
+        self.pointer = pointer
         self.pointer2 = pointer2
         self.index = index
 
     def check(self, choice: str) -> list[str | int]:
         if choice == self.choice1:
-            return [self.result1, self.pointer1]
+            return [self.result1, self.pointer]
         if choice == self.choice2:
             return [self.result2, self.pointer2]
         else:
@@ -90,7 +90,7 @@ class story:
         self.pointer = pointer
 
 class fight:
-    def __init__(self, text_list: list[str], outcome1: list[str], outcome2: list[str], outcome3: list[str], index: int, pointer1: int, pointer2: int, pointer3: int) -> None:
+    def __init__(self, text_list: list[str], outcome1: list[str], outcome2: list[str], outcome3: list[str], index: int, pointer: int, pointer2: int, pointer3: int) -> None:
         """
 
         Class to contain fight events
@@ -102,7 +102,7 @@ class fight:
         outcome2: list[str] - the outcome of the second choice
         outcome3: list[str] - the outcome of the third choice
         index: int - the index of the current event
-        pointer1: int - the index of the next event if the first choice is chosen
+        pointer: int - the index of the next event if the first choice is chosen
         pointer2: int - the index of the next event if the second choice is chosen
         pointer3: int - the index of the next event if the third choice is chosen
         
@@ -112,7 +112,7 @@ class fight:
         self.outcome2 = outcome2
         self.outcome3 = outcome3
         self.index = index
-        self.pointer1 = pointer1
+        self.pointer = pointer
         self.pointer2 = pointer2
         self.pointer3 = pointer3
         
@@ -666,7 +666,7 @@ def main(stdscr) -> None:
             input_win.nodelay(True)
             break
 
-        if obj.__class__.__name__ == 'intro' and obj.pointer == obj.index:
+        elif obj.__class__.__name__ == 'intro' and obj.pointer == obj.index:
             for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
                 scroll_print(c, main_win)
 
@@ -678,7 +678,7 @@ def main(stdscr) -> None:
             input_win.nodelay(True)
             break
 
-        if obj.__class__.__name__ == 'question' and obj.pointer1 == obj.index and obj.pointer2 == obj.index:
+        elif obj.__class__.__name__ == 'question' and obj.pointer == obj.index:
             for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
                 scroll_print(c, main_win)
 
@@ -690,7 +690,7 @@ def main(stdscr) -> None:
             input_win.nodelay(True)
             break
 
-        if obj.__class__.__name__ == 'fight' and obj.pointer1 == obj.index or obj.pointer2 == obj.index or obj.pointer3 == obj.index:
+        elif obj.__class__.__name__ == 'fight' and obj.pointer == obj.index:
             for c in "\n\nTo be continued in upcoming updates...\nBefore then, press any key to quit.":
                 scroll_print(c, main_win)
 
@@ -757,7 +757,7 @@ def main(stdscr) -> None:
                     time.sleep(0.01)
                 time.sleep(2)
                 continue
-            if result == [obj.result1, obj.pointer1]:
+            if result == [obj.result1, obj.pointer]:
                 main_win.addstr('\n\n')
                 for c in obj.result1:
                     scroll_print(c, main_win)
@@ -773,7 +773,7 @@ def main(stdscr) -> None:
                 input_win.getch()
                 input_win.nodelay(True)
 
-                local_data['player'].story_index = obj.pointer1
+                local_data['player'].story_index = obj.pointer
 
             elif result == [obj.result2, obj.pointer2]:
                 main_win.addstr('\n\n')
@@ -932,7 +932,7 @@ def main(stdscr) -> None:
                 # same as above
 
             if out == 1:
-                local_data['player'].story_index = obj.pointer1
+                local_data['player'].story_index = obj.pointer
 
                 main_win.addstr('\n\n')
                 for c in obj.outcome1:
