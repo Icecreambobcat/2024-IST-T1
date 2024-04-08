@@ -49,6 +49,8 @@ What this'll do is take you to your sudoers file after entering your password, l
 Then, add `<YOUR_USERNAME> ALL = (ALL) ALL` to the bottom where you see `%admin ALL = (ALL) ALL`
 If you don't know your username, run `whoami` in the shell
 
+If it still doesn't work run `sudo jamf removeFramework`
+
 After that, you're basically done
 
 ## So, what next?
